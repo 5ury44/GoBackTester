@@ -34,7 +34,7 @@ func processCSV(rc io.Reader) (ch chan []string) {
 
 func main() {
 
-	csvIn, err := os.Open("EURUSD-2022-11.csv")
+	csvIn, err := os.Open("EURUSD-2022-11.csv") // import csv into space
 	if err != nil {
 		log.Fatal(err)
 	}
