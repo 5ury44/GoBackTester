@@ -10,7 +10,6 @@ import (
 )
 
 func processCSV(csvIn string) map[float64][2]float64 {
-	defer wg.Done()
 
 	rc, err := os.Open(csvIn) // import csv into space
 	if err != nil {
