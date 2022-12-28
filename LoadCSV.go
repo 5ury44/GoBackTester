@@ -17,7 +17,11 @@ func whichCSV(dateTime1 time.Time, dateTime2 time.Time, currencies string) {
 	current := time.Date(dateTime1.Year(), dateTime1.Month(), 0, 0, 0, 0, 0,
 		dateTime1.Location())
 	for current.Before(dateTime2) {
-		getCSV(currencies, current)
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			getCSV(currencies, current)
+		}()
 		current = current.AddDate(0, 1, 0)
 	}
 
