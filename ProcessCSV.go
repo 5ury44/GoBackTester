@@ -9,24 +9,18 @@ import (
 	"strings"
 )
 
-func processCSV(csvIn string) map[float64][2]float64 {
+func processCSV(csvIn string) [][3]float64 {
 
 	rc, err := os.Open(csvIn) // import csv into space
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	processedMap := make(map[float64][2]float64)
+	processedArr := make([][3]float64, 0)
 	r := csv.NewReader(rc)
 
-	// handle header
-	rec, err := r.Read()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	for {
-		rec, err = r.Read()
+		rec, err := r.Read()
 		if err != nil {
 			if err == io.EOF {
 				break
@@ -37,9 +31,10 @@ func processCSV(csvIn string) map[float64][2]float64 {
 		time := strings.Split(rec[1], ":")
 
 		floatHour, err := strconv.ParseFloat(time[0][9:], 64)
+		floatDay, err3 := strconv.ParseFloat((time[0][4:])[2:], 64)
 		floatMinute, err1 := strconv.ParseFloat(time[1], 64)
 		floatSecond, err2 := strconv.ParseFloat(time[2], 64)
-		if err != nil && err1 != nil && err2 != nil {
+		if err != nil && err1 != nil && err2 != nil && err3 != nil {
 			log.Fatal(err)
 		}
 
@@ -49,10 +44,9 @@ func processCSV(csvIn string) map[float64][2]float64 {
 			log.Fatal(err)
 		}
 
-		keyTime := 3600*floatHour + 60*floatMinute + floatSecond
-		valBidAsk := [2]float64{floatBid, floatAsk}
-		processedMap[keyTime] = valBidAsk
-
+		keyTime := 86400*floatDay + 3600*floatHour + 60*floatMinute + floatSecond
+		valBidAsk := [3]float64{keyTime, floatBid, floatAsk}
+		processedArr = append(processedArr, valBidAsk)
 	}
-	return processedMap
+	return processedArr
 }
