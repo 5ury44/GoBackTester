@@ -3,12 +3,10 @@ import datetime
 import os
 import time
 
-from selenium.webdriver.support import expected_conditions as EC
 import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
 
 
 def month_year_range(start_month, start_year, end_month, end_year):
