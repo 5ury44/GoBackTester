@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"runtime"
 	"sync"
+	"time"
 )
 
 var wg sync.WaitGroup
@@ -13,7 +13,7 @@ func init() {
 }
 
 func main() {
-	filesToParse := 2
+	/*filesToParse := 2
 	wg.Add(filesToParse)
 
 	go func() {
@@ -27,5 +27,10 @@ func main() {
 	}()
 
 	wg.Wait() // put everything to happen after below
-	fmt.Println("loaded CSV files")
+	fmt.Println("loaded CSV files")*/
+
+	current := time.Date(2022, 11, 1, 1, 1, 1, 0, time.UTC)
+	next := time.Date(2022, 11, 3, 1, 1, 1, 0, time.UTC)
+	whichCSV(current, next, "EURUSD")
+	wg.Wait()
 }

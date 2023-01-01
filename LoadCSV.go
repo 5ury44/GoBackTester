@@ -1,25 +1,30 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"golang.org/x/net/html"
-	"io"
 	"io/ioutil"
 	"net/http"
+	"net/http/cookiejar"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 )
 
+type Login struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 func whichCSV(dateTime1 time.Time, dateTime2 time.Time, currencies string) {
-	current := time.Date(dateTime1.Year(), dateTime1.Month(), 0, 0, 0, 0, 0,
+	current := time.Date(dateTime1.Year(), dateTime1.Month(), 1, 0, 0, 0, 0,
 		dateTime1.Location())
 	for current.Before(dateTime2) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		func() {
+			fmt.Println(current.Month())
 			getCSV(currencies, current)
 		}()
 		current = current.AddDate(0, 1, 0)
@@ -35,44 +40,64 @@ func getCSV(currencies string, current time.Time) {
 		}
 	}
 
-	client := &http.Client{}
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		panic(err)
+	}
+	client := &http.Client{
+		Jar: jar,
+	}
+
+	loginRequest := Login{
+		Username: "5ury44",
+		Password: "Shreya_vr12",
+	}
+	requestBody, err := json.Marshal(loginRequest)
+	if err != nil {
+		fmt.Println("Error parsing webpage:", err)
+	}
+
+	resp, err := client.Post("https://www.truefx.com/truefx-login/", "application/json",
+		bytes.NewReader(requestBody))
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
 
 	idcat, err := findIdCat(current.Month().String())
-	if err != nil {
+	if err != nil || idcat == -1 {
 		fmt.Println("Error parsing webpage:", err)
 		return
 	}
 
 	// Send a GET request to truefx
-	response, err := client.Get("https://www.truefx.com/truefx-historical-downloads/#93-" +
+	resp, err = client.Get("https://www.truefx.com/truefx-historical-downloads/#93-" +
 		strconv.Itoa(idcat) + "-top")
 	if err != nil {
 		fmt.Println("Error retrieving webpage:", err)
 		return
 	}
-	defer response.Body.Close()
+	defer resp.Body.Close()
 
-	doc, err := html.Parse(response.Body)
+	doc, err := html.Parse(resp.Body)
 	if err != nil {
 		fmt.Println("Error parsing webpage:", err)
 		return
 	}
 
-	var fileURL string
+	//var fileURL string
 	var found bool
 	var f func(*html.Node)
 	f = func(n *html.Node) {
 		if n.Type == html.ElementNode && n.Data == "a" {
 			for _, a := range n.Attr {
-				if a.Key == "title" && a.Val == currencies+"-"+strconv.Itoa(current.Year())+"-"+
-					strconv.Itoa(current.Day()) {
-					for _, a := range n.Attr {
-						if a.Key == "href" {
-							fileURL = a.Val
-							found = true
-							return
-						}
-					}
+				if a.Key == "href" {
+					var b bytes.Buffer
+					html.Render(&b, n)
+					fmt.Println(b.String())
+					//fileURL = a.Val
+					found = true
+					return
 				}
 			}
 		}
@@ -86,7 +111,7 @@ func getCSV(currencies string, current time.Time) {
 		return
 	}
 
-	response, err = client.Get(fileURL)
+	/*response, err = client.Get(fileURL)
 	if err != nil {
 		fmt.Println("Error downloading file:", err)
 		return
@@ -105,46 +130,51 @@ func getCSV(currencies string, current time.Time) {
 	if err != nil {
 		fmt.Printf("error writing to file: %v\n", err)
 		return
-	}
+	}*/
 }
 
 func findIdCat(month string) (int, error) {
 
-	resp, err := http.Get("https://www.truefx.com/truefx-historical-downloads/")
+	htmlData, err := ioutil.ReadFile("trueFX.html")
 	if err != nil {
 		fmt.Println(err)
-		return -1, nil
+		return -1, err
 	}
-	defer resp.Body.Close()
 
-	htmlBody, err := ioutil.ReadAll(resp.Body)
+	doc, err := html.Parse(strings.NewReader(string(htmlData)))
 	if err != nil {
 		fmt.Println(err)
-		return -1, nil
+		return -1, err
 	}
 
-	tokenizer := html.NewTokenizer(strings.NewReader(string(htmlBody)))
+	id := findElementByTitle(doc, month)
+	fmt.Println(id)
+	return strconv.Atoi(id)
+}
 
-	for {
-		tt := tokenizer.Next()
-		if tt == html.ErrorToken {
-			break
-		}
-		if tt == html.StartTagToken {
-			t := tokenizer.Token()
-			if t.Data == "div" {
-				for _, attr := range t.Attr {
-					if attr.Key == "title" && attr.Val == month {
-						for _, attr := range t.Attr {
-							if attr.Key == "data-idcat" {
-								fmt.Println(attr.Val)
-								return strconv.Atoi(attr.Val)
-							}
-						}
-					}
+func findElementByTitle(n *html.Node, title string) string {
+	if n.Type == html.ElementNode && n.Data == "a" {
+		for _, attr := range n.Attr {
+			if attr.Key == "data-idcat" {
+				var b bytes.Buffer
+				html.Render(&b, n.FirstChild.NextSibling)
+				if strings.Contains(b.String(), title) {
+					fmt.Println(b.String())
+					// Return the value of the idcat attribute
+					return attr.Val
 				}
 			}
 		}
+
 	}
-	return -1, nil
+
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		id := findElementByTitle(c, title)
+		if id != "" {
+			return id
+		}
+	}
+
+	return ""
+
 }
