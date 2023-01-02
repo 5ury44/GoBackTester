@@ -1,12 +1,19 @@
 import argparse
 import datetime
 import os
+import shutil
+import ssl
 import time
+import urllib
+import zipfile
 
 import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
 
 
 def month_year_range(start_month, start_year, end_month, end_year):
@@ -24,7 +31,7 @@ def month_year_range(start_month, start_year, end_month, end_year):
         current_date = datetime.date(current_year, current_month, 1)
     return result
 
-
+ssl._create_default_https_context = ssl._create_unverified_context
 parser = argparse.ArgumentParser(description="Add dates")
 parser.add_argument("startDate", help="start date")
 parser.add_argument("endDate", help="end date")
@@ -71,8 +78,9 @@ with requests.Session() as session:
             year_adj = i
         name_to_number[str(datetime.date(2008, i, 1).strftime('%B'))] = year_adj
 
-    if 'files' not in os.listdir():
-        os.mkdir('files')
+    if 'files' in os.listdir():
+        shutil.rmtree('files')
+    os.mkdir('files')
 
     response = session.get('https://www.truefx.com/truefx-historical-downloads/')
     html = BeautifulSoup(response.content, 'html.parser')
@@ -97,7 +105,7 @@ with requests.Session() as session:
         driver.execute_script("window.open('');")
         driver.switch_to.window(driver.window_handles[-1])
         driver.get('https://www.truefx.com/truefx-historical-downloads/#93-' + str(idCat) + '-top')
-        time.sleep(2)
+        myElem = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.PARTIAL_LINK_TEXT, 'AUDJPY')))
         html = BeautifulSoup(driver.page_source, 'html.parser')
 
         for file in html.find_all('a'):
@@ -110,10 +118,15 @@ with requests.Session() as session:
                     if str(file.get('href'))[45:].__contains__(mstr) and str(file.get('href'))[45:].__contains__(
                             str(dt.year)):
                         print(str(file.get('href')))
+                        urllib.request.urlretrieve(str(file.get('href')), str(file.get('href'))[-18:])
+                        zip_ref = zipfile.ZipFile(str(file.get('href'))[-18:], 'r')
+                        zip_ref.extractall("files")
+                        zip_ref.close()
+                        os.remove(str(file.get('href'))[-18:])
                         found = True
                         break
-        if found:
-            break
+            if found:
+                break
         driver.close()
         driver.switch_to.window(driver.window_handles[-1])
     driver.close()
