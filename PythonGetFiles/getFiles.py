@@ -3,7 +3,6 @@ import datetime
 import os
 import shutil
 import ssl
-import time
 import urllib
 import zipfile
 
@@ -13,7 +12,6 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-
 
 
 def month_year_range(start_month, start_year, end_month, end_year):
@@ -31,17 +29,17 @@ def month_year_range(start_month, start_year, end_month, end_year):
         current_date = datetime.date(current_year, current_month, 1)
     return result
 
+
 ssl._create_default_https_context = ssl._create_unverified_context
 parser = argparse.ArgumentParser(description="Add dates")
 parser.add_argument("startDate", help="start date")
 parser.add_argument("endDate", help="end date")
 parser.add_argument("currency", help="curr")
-# startDate = str(args.startDate).split("-")
-# endDate = str(args.endDate).split("-")
-# currency = str(args.currency)
-startDate = str("10-2022").split("-")
-endDate = str("11-2022").split("-")
-currency = "eurusd"
+
+startDate = str(parser.startDate).split("+")
+endDate = str(parser.endDate).split("+")
+currency = str(parser.currency)
+
 res = month_year_range(int(startDate[0]), int(startDate[1]), int(endDate[0]), int(endDate[1]))
 
 url = "https://www.truefx.com/truefx-login/"
