@@ -31,6 +31,6 @@ func main() {
 
 	current := time.Date(2022, 11, 1, 1, 1, 1, 0, time.UTC)
 	next := time.Date(2022, 11, 3, 1, 1, 1, 0, time.UTC)
-	whichCSV(current, next, "EURUSD")
+	whichCSV(current, next, "eurusd")
 	wg.Wait()
 }

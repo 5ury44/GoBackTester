@@ -3,6 +3,7 @@ import datetime
 import os
 import shutil
 import ssl
+import time
 import urllib
 import zipfile
 
@@ -32,13 +33,13 @@ def month_year_range(start_month, start_year, end_month, end_year):
 
 ssl._create_default_https_context = ssl._create_unverified_context
 parser = argparse.ArgumentParser(description="Add dates")
-parser.add_argument("startDate", help="start date")
-parser.add_argument("endDate", help="end date")
-parser.add_argument("currency", help="curr")
-
-startDate = str(parser.startDate).split("+")
-endDate = str(parser.endDate).split("+")
-currency = str(parser.currency)
+parser.add_argument("--startDate", help="start date")
+parser.add_argument("--endDate", help="end date")
+parser.add_argument("--currency", help="curr")
+args = parser.parse_args()
+startDate = str(args.startDate).split("+")
+endDate = str(args.endDate).split("+")
+currency = str(args.currency)
 
 res = month_year_range(int(startDate[0]), int(startDate[1]), int(endDate[0]), int(endDate[1]))
 
