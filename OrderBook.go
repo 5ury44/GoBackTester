@@ -3,7 +3,6 @@ package main
 import (
 	"runtime"
 	"sync"
-	"time"
 )
 
 var wg sync.WaitGroup
@@ -29,8 +28,11 @@ func main() {
 	wg.Wait() // put everything to happen after below
 	fmt.Println("loaded CSV files")*/
 
-	current := time.Date(2022, 11, 1, 1, 1, 1, 0, time.UTC)
+	/*current := time.Date(2022, 11, 1, 1, 1, 1, 0, time.UTC)
 	next := time.Date(2022, 11, 3, 1, 1, 1, 0, time.UTC)
-	whichCSV(current, next, "eurusd")
+	whichCSV(current, next, "eurusd")*/
+
+	/*testMap := currencyMap([]string{"usd", "eur"})
+	fmt.Println(len(testMap["eurusd"]))*/
 	wg.Wait()
 }

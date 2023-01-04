@@ -21,9 +21,10 @@ type instant struct {
 var currencyPairs = []string{"audjpy", "audnzd", "audusd", "cadjpy", "chfjpy", "eurchf", "eurgbp", "eurjpy", "eurpln",
 	"eurusd", "gbpjpy", "gbpusd", "nzdusd", "usdcad", "usdchf", "usdjpy", "usdmxn", "usdrub", "usdtry", "usdzar"}
 
-func currencyMap(currs []string) map[string][]instant {
-	mapCurr := make(map[string][]instant)
-	var pairs []int
+var pairs []int
+
+func findPairs(currs []string) {
+
 	for i, str1 := range currs {
 		for _, str2 := range currs[i+1:] {
 			for i, str3 := range currencyPairs {
@@ -33,6 +34,10 @@ func currencyMap(currs []string) map[string][]instant {
 			}
 		}
 	}
+}
+
+func currencyMap() map[string][]instant {
+	mapCurr := make(map[string][]instant)
 
 	files, err := ioutil.ReadDir("PythonGetFiles/files")
 	if err != nil {
