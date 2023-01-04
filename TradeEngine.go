@@ -36,17 +36,18 @@ func executeEngine(alpha baseAlpha) {
 
 		tradeOnTime()
 		for _, tradeReg := range alpha.tradeQueue {
-			thisInstant := mapCurrency[currencyPairs[tradeReg.currenciesKey]][positions[currencyPairs[tradeReg.currenciesKey]]]
+			currOpp := currencyPairs[tradeReg.currenciesKey]
+			thisInstant :=
+				mapCurrency[currOpp][positions[currOpp]]
 			if tradeReg.inverted {
-				alpha.holdings[currencyPairs[tradeReg.currenciesKey][len(currencyPairs[tradeReg.currenciesKey])-3:]] -=
-					tradeReg.volume
-				alpha.holdings[currencyPairs[tradeReg.currenciesKey][3:]] += tradeReg.volume * thisInstant.ask
+				alpha.holdings[currOpp[len(currencyPairs[tradeReg.currenciesKey])-3:]] -= tradeReg.volume
+				alpha.holdings[currOpp[3:]] += tradeReg.volume * thisInstant.ask
 			} else {
-				alpha.holdings[currencyPairs[tradeReg.currenciesKey][len(currencyPairs[tradeReg.currenciesKey])-3:]] +=
-					tradeReg.volume / thisInstant.bid // todo check if bid is the correct term to use
-				alpha.holdings[currencyPairs[tradeReg.currenciesKey][3:]] -= tradeReg.volume
+				alpha.holdings[currOpp[len(currOpp)-3:]] += tradeReg.volume / thisInstant.bid // todo check if bid is the correct term to use
+				alpha.holdings[currOpp[3:]] -= tradeReg.volume
 			}
 		}
+		alpha.tradeQueue = make([]trade, 1)
 	}
 }
 
