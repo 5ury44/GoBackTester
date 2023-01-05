@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -13,6 +14,7 @@ type trade struct {
 
 var mapCurrency map[string][]instant
 var positions map[string]int
+var first = ""
 
 func initEngine(alpha baseAlpha) {
 	initAlpha(alpha)
@@ -28,11 +30,12 @@ func initEngine(alpha baseAlpha) {
 
 	for key := range mapCurrency {
 		positions[key] = binarySearch(mapCurrency[key], alpha.start)
-		fmt.Println(positions[key])
 	}
 }
 
 func executeEngine(alpha baseAlpha) {
+	evalWorth(alpha)
+	fmt.Println(" by start")
 	for t := alpha.start; t.Before(alpha.end); t = t.Add(time.Millisecond * 1) {
 		alpha.current = t
 		for currencyExch := range positions {
@@ -56,12 +59,13 @@ func executeEngine(alpha baseAlpha) {
 		}
 		alpha.tradeQueue = make([]trade, 0)
 	}
+	evalWorth(alpha)
+	fmt.Println(" by end")
 }
 
 func binarySearch(instants []instant, target time.Time) int {
 	low := 0
 	high := len(instants) - 1
-	fmt.Println(instants[low].date)
 
 	for low <= high {
 		mid := low + (high-low)/2
@@ -80,4 +84,34 @@ func binarySearch(instants []instant, target time.Time) int {
 		return low - 1
 	}
 	return low
+}
+
+func evalWorth(alpha baseAlpha) {
+	transfer := make(map[string]float64, 0)
+	for key, holding := range alpha.holdings {
+		transfer[key] = holding
+	}
+
+	for key := range transfer {
+		if first == "" || first == key {
+			first = key
+			continue
+		}
+
+		for _, s := range currencyPairs {
+			if strings.Contains(s, key) && strings.Contains(s, first) {
+				thisInstant := mapCurrency[s][positions[s]]
+				if s[len(s)-3:] == key {
+					transfer[first] += transfer[key] * thisInstant.ask
+					transfer[key] = 0
+				} else {
+					transfer[first] += transfer[key] / thisInstant.bid //todo check if statement logic right
+					transfer[key] = 0
+				}
+				break
+			}
+		}
+	}
+	fmt.Printf("%.10f", transfer[first])
+	fmt.Print(" amount of " + first)
 }

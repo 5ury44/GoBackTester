@@ -46,7 +46,7 @@ func main() {
 				"eur": 0.5,
 				"usd": 0.5,
 			},
-			true,
+			false,
 		)
 	}()
 	wg.Wait()

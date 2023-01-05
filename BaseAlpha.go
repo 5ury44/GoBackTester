@@ -33,4 +33,5 @@ func initAlpha(alpha baseAlpha) {
 
 func tradeOnTime(alpha baseAlpha) {
 	//write alpha here
+	//make something that creates trade
 }
