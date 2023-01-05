@@ -1,6 +1,9 @@
 package main
 
-import "time"
+import (
+	"strings"
+	"time"
+)
 
 type baseAlpha struct {
 	start        time.Time
@@ -33,5 +36,15 @@ func initAlpha(alpha baseAlpha) {
 
 func tradeOnTime(alpha baseAlpha) {
 	//write alpha here
-	//make something that creates trade
+	//use make trade to make a trade which will be added to the queue
+}
+
+func makeTrade(alpha baseAlpha, currency1 string, currency2 string, volume float64) {
+	for i, s := range currencyPairs {
+		if strings.Contains(s, currency1) && strings.Contains(s, currency2) {
+			invert := s[len(s)-3:] == currency1
+			alpha.tradeQueue = append(alpha.tradeQueue, trade{i, invert, volume})
+			break
+		}
+	}
 }
