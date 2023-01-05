@@ -1,6 +1,6 @@
 # GoBackTester
 This is a backtester written in Golang (and a little python) that uses forex data in order to backtest given trading strategies. Our Data is sourced from truefx.com's historical forex data and supported currencies are listed on their website.
-> Update Jan 1, 2023: Almost done with the tester. I am in the process of adding methods to calculate worth at any time,
+> Update Jan 5, 2023: Almost done with the tester. I am in the process of adding methods to calculate worth at any time,
 >give averages for a period of time before current, and do different types of orders. Overall, everything is fairly fast
 > except the Python script which I will get back to improving.
 

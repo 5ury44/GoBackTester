@@ -105,7 +105,7 @@ func evalWorth(alpha baseAlpha) {
 					transfer[first] += transfer[key] * thisInstant.ask
 					transfer[key] = 0
 				} else {
-					transfer[first] += transfer[key] / thisInstant.bid //todo check if statement logic right
+					transfer[first] += transfer[key] / thisInstant.bid //todo maybe standardize out currency?
 					transfer[key] = 0
 				}
 				break
@@ -113,5 +113,5 @@ func evalWorth(alpha baseAlpha) {
 		}
 	}
 	fmt.Printf("%.10f", transfer[first])
-	fmt.Print(" amount of " + first)
+	fmt.Print(" amount of " + first + " portfolio worth")
 }
