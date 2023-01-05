@@ -15,6 +15,7 @@ var mapCurrency map[string][]instant
 var positions map[string]int
 
 func initEngine(alpha baseAlpha) {
+	initAlpha(alpha)
 	findPairs(alpha.currencies)
 	if alpha.downloadData {
 		for _, i := range pairs {
@@ -40,7 +41,7 @@ func executeEngine(alpha baseAlpha) {
 			}
 		}
 
-		tradeOnTime()
+		tradeOnTime(alpha)
 		for _, tradeReg := range alpha.tradeQueue {
 			currOpp := currencyPairs[tradeReg.currenciesKey]
 			thisInstant :=
@@ -75,8 +76,6 @@ func binarySearch(instants []instant, target time.Time) int {
 		}
 	}
 
-	// If the target time is not found in the slice, return the index of the closest
-	// time that is at or ahead of the target time.
 	if low < len(instants) && instants[low].date.After(target) {
 		return low - 1
 	}
