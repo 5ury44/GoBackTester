@@ -45,7 +45,7 @@ func main() {
 			"eur": 0.5,
 			"usd": 0.5,
 		},
-		tradeQueue:   make([]trade, 1),
+		tradeQueue:   make([]trade, 0),
 		downloadData: false,
 	}
 	initEngine(alpha)

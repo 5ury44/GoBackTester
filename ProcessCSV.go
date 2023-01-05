@@ -21,15 +21,15 @@ type instant struct {
 var currencyPairs = []string{"audjpy", "audnzd", "audusd", "cadjpy", "chfjpy", "eurchf", "eurgbp", "eurjpy", "eurpln",
 	"eurusd", "gbpjpy", "gbpusd", "nzdusd", "usdcad", "usdchf", "usdjpy", "usdmxn", "usdrub", "usdtry", "usdzar"}
 
-var pairs []int
+var pairs = make([]int, 0)
 
 func findPairs(currs []string) {
 
 	for i, str1 := range currs {
 		for _, str2 := range currs[i+1:] {
-			for i, str3 := range currencyPairs {
+			for j, str3 := range currencyPairs {
 				if strings.Contains(str3, str2) && strings.Contains(str3, str1) {
-					pairs = append(pairs, i)
+					pairs = append(pairs, j)
 				}
 			}
 		}
@@ -75,18 +75,10 @@ func processCSV(csvIn string) []instant {
 			log.Fatal(err)
 		}
 
-		split := strings.Split(rec[1], ":")
+		const layout = "20060102 15:04:05.000"
+		date, err := time.Parse(layout, rec[1])
 
-		intYear, err4 := strconv.Atoi(csvIn[7:10])
-		intMonth, err5 := strconv.Atoi(csvIn[12:13])
-		floatHour, err := strconv.Atoi(split[0][9:])
-		floatDay, err3 := strconv.Atoi((split[0][4:])[2:])
-		floatMinute, err1 := strconv.Atoi(split[1])
-		floatSecond, err2 := strconv.ParseFloat(split[2], 64)
-		if err != nil && err1 != nil && err2 != nil && err3 != nil && err4 != nil && err5 != nil {
-			log.Fatal(err)
-		}
-		date := time.Date(intYear, time.Month(intMonth), floatDay, floatHour, floatMinute, 0, int(floatSecond*1000000000), time.UTC)
+		//date := time.Date(intYear, time.Month(11+0*intMonth), floatDay, floatHour, floatMinute, floatSecond, 1000000*floatNs, time.UTC)
 
 		floatBid, err := strconv.ParseFloat(rec[2], 64)
 		floatAsk, err1 := strconv.ParseFloat(rec[3], 64)

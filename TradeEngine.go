@@ -1,6 +1,9 @@
 package main
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type trade struct {
 	currenciesKey int
@@ -14,14 +17,17 @@ var positions map[string]int
 func initEngine(alpha baseAlpha) {
 	findPairs(alpha.currencies)
 	if alpha.downloadData {
-		for i := range pairs {
+		for _, i := range pairs {
+			fmt.Println(i)
 			whichCSV(alpha.start, alpha.end, currencyPairs[i])
 		}
 	}
 	mapCurrency = currencyMap()
+	positions = make(map[string]int)
 
 	for key := range mapCurrency {
 		positions[key] = binarySearch(mapCurrency[key], alpha.start)
+		fmt.Println(positions[key])
 	}
 }
 
@@ -47,33 +53,32 @@ func executeEngine(alpha baseAlpha) {
 				alpha.holdings[currOpp[3:]] -= tradeReg.volume
 			}
 		}
-		alpha.tradeQueue = make([]trade, 1)
+		alpha.tradeQueue = make([]trade, 0)
 	}
 }
 
 func binarySearch(instants []instant, target time.Time) int {
 	low := 0
 	high := len(instants) - 1
+	fmt.Println(instants[low].date)
 
 	for low <= high {
 		mid := low + (high-low)/2
+		midTime := instants[mid].date
 
-		if target.Before(instants[mid].date) {
-			high = mid - 1
-		} else if target.After(instants[mid].date) {
+		if midTime.Before(target) {
 			low = mid + 1
+		} else if midTime.After(target) {
+			high = mid - 1
 		} else {
 			return mid
 		}
 	}
 
-	if low >= len(instants) {
-		return len(instants) - 1
-	} else if high < 0 {
-		return 0
-	} else if target.Sub(instants[low].date) < instants[high].date.Sub(target) {
-		return low
-	} else {
-		return high
+	// If the target time is not found in the slice, return the index of the closest
+	// time that is at or ahead of the target time.
+	if low < len(instants) && instants[low].date.After(target) {
+		return low - 1
 	}
+	return low
 }
