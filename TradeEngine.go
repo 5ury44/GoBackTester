@@ -2,6 +2,10 @@ package main
 
 import (
 	"fmt"
+	"github.com/go-echarts/go-echarts/v2/charts"
+	"github.com/go-echarts/go-echarts/v2/opts"
+	"github.com/go-echarts/go-echarts/v2/types"
+	"os"
 	"strings"
 	"time"
 )
@@ -15,6 +19,8 @@ type trade struct {
 var mapCurrency map[string][]instant
 var positions map[string]int
 var first = ""
+var history = make([]opts.LineData, 0)
+var initialValue float64 = 0
 
 func initEngine(alpha baseAlpha) {
 	initAlpha(alpha)
@@ -33,10 +39,13 @@ func initEngine(alpha baseAlpha) {
 	}
 }
 
-func executeEngine(alpha baseAlpha) {
-	evalWorth(alpha)
-	fmt.Println(" by start")
+func executeEngine(alpha baseAlpha, resolution int) {
+	initialValue = evalWorth(alpha)
+	fmt.Printf("%.10f", initialValue)
+	fmt.Println(" amount of " + first + " portfolio worth at the start")
+	count := 0
 	for t := alpha.start; t.Before(alpha.end); t = t.Add(time.Millisecond * 1) {
+		count++
 		alpha.current = t
 		for currencyExch := range positions {
 			if mapCurrency[currencyExch][positions[currencyExch]].date.Before(t) {
@@ -58,9 +67,11 @@ func executeEngine(alpha baseAlpha) {
 			}
 		}
 		alpha.tradeQueue = make([]trade, 0)
+		graphInit(resolution, count, alpha)
 	}
-	evalWorth(alpha)
-	fmt.Println(" by end")
+	fmt.Printf("%.10f", evalWorth(alpha))
+	fmt.Println(" amount of " + first + " portfolio worth by the end")
+	createGraph()
 }
 
 func binarySearch(instants []instant, target time.Time) int {
@@ -86,7 +97,7 @@ func binarySearch(instants []instant, target time.Time) int {
 	return low
 }
 
-func evalWorth(alpha baseAlpha) {
+func evalWorth(alpha baseAlpha) float64 {
 	transfer := make(map[string]float64, 0)
 	for key, holding := range alpha.holdings {
 		transfer[key] = holding
@@ -112,6 +123,25 @@ func evalWorth(alpha baseAlpha) {
 			}
 		}
 	}
-	fmt.Printf("%.10f", transfer[first])
-	fmt.Print(" amount of " + first + " portfolio worth")
+	return transfer[first]
+}
+
+func graphInit(resolution int, current int, alpha baseAlpha) {
+	if resolution > 0 && current%resolution == 0 {
+		history = append(history, opts.LineData{Value: evalWorth(alpha) / initialValue})
+	}
+}
+
+func createGraph() {
+	line := charts.NewLine()
+	line.SetGlobalOptions(
+		charts.WithInitializationOpts(opts.Initialization{Theme: types.ThemeWesteros}),
+		charts.WithTitleOpts(opts.Title{
+			Title:    "Percent Change in Portfolio Worth Over Given Period",
+			Subtitle: "By GoOrderBook Forex Backtrader",
+		}))
+	charts.WithYAxisOpts(opts.YAxis{Name: "percent change"})
+	line.AddSeries("Percent Growth", history).SetXAxis(len(history))
+	f, _ := os.Create("line" + time.Now().String() + ".html")
+	line.Render(f)
 }

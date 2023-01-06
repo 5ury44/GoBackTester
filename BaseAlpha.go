@@ -26,7 +26,7 @@ func newAlpha(start time.Time, end time.Time, curr []string, holdings map[string
 		downloadData: download,
 	}
 	initEngine(alpha)
-	executeEngine(alpha)
+	executeEngine(alpha, 60000) // higher resolution to run faster but worse graph quality (in ms intervals)
 }
 
 func initAlpha(alpha baseAlpha) {
