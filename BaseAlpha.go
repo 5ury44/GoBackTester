@@ -34,17 +34,20 @@ func initAlpha(alpha baseAlpha) {
 	// write alpha initialization code here if needed
 }
 
-func tradeOnTime(alpha baseAlpha) {
+func tradeOnTime(alpha baseAlpha, positions map[string]int) baseAlpha {
 	//write alpha here
 	//use make trade to make a trade which will be added to the queue
+
+	return exampleReversion(alpha, positions)
 }
 
-func makeTrade(alpha baseAlpha, currency1 string, currency2 string, volume float64) {
+func makeTrade(alpha baseAlpha, currency1 string, currency2 string, volume float64) baseAlpha {
 	for i, s := range currencyPairs {
 		if strings.Contains(s, currency1) && strings.Contains(s, currency2) {
-			invert := s[len(s)-3:] == currency1
+			invert := s[len(s)-3:] == currency2
 			alpha.tradeQueue = append(alpha.tradeQueue, trade{i, invert, volume})
 			break
 		}
 	}
+	return alpha
 }

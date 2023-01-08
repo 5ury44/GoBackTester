@@ -45,6 +45,7 @@ func executeEngine(alpha baseAlpha, resolution int) {
 	fmt.Println(" amount of " + first + " portfolio worth at the start")
 	count := 0
 	for t := alpha.start; t.Before(alpha.end); t = t.Add(time.Millisecond * 1) {
+
 		count++
 		alpha.current = t
 		for currencyExch := range positions {
@@ -53,7 +54,8 @@ func executeEngine(alpha baseAlpha, resolution int) {
 			}
 		}
 
-		tradeOnTime(alpha)
+		alpha := tradeOnTime(alpha, positions)
+
 		for _, tradeReg := range alpha.tradeQueue {
 			currOpp := currencyPairs[tradeReg.currenciesKey]
 			thisInstant :=
@@ -66,6 +68,7 @@ func executeEngine(alpha baseAlpha, resolution int) {
 				alpha.holdings[currOpp[3:]] -= tradeReg.volume
 			}
 		}
+
 		alpha.tradeQueue = make([]trade, 0)
 		graphInit(resolution, count, alpha)
 	}

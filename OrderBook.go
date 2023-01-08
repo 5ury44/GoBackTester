@@ -43,8 +43,8 @@ func main() {
 			time.Date(2022, 11, 3, 1, 1, 1, 0, time.UTC),
 			[]string{"eur", "usd"},
 			map[string]float64{
-				"eur": 0.5,
-				"usd": 0.5,
+				"usd": 1,
+				"eur": 0,
 			},
 			false,
 		)
