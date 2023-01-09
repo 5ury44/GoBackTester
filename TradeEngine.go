@@ -141,7 +141,7 @@ func createGraph() {
 		charts.WithInitializationOpts(opts.Initialization{Theme: types.ThemeWesteros}),
 		charts.WithTitleOpts(opts.Title{
 			Title:    "Percent Change in Portfolio Worth Over Given Period",
-			Subtitle: "By GoOrderBook Forex Backtrader",
+			Subtitle: "By GoBackTester Forex Backtester",
 		}))
 	charts.WithYAxisOpts(opts.YAxis{Name: "percent change"})
 	line.AddSeries("Percent Growth", history).SetXAxis(len(history))
