@@ -53,23 +53,27 @@ func executeEngine(alpha baseAlpha, resolution int) {
 				positions[currencyExch] += 1
 			}
 		}
+		if count-1 == 0 || (count-1)%100 == 0 {
+			ba := findMaxAskIndexWithin1000ms(positions["eurusd"])
+			newpos := make(map[string]int, 0)
+			newpos["eurusd"] = ba[0]
+			alpha := tradeOnTime(alpha, newpos)
 
-		alpha := tradeOnTime(alpha, positions)
-
-		for _, tradeReg := range alpha.tradeQueue {
-			currOpp := currencyPairs[tradeReg.currenciesKey]
-			thisInstant :=
-				mapCurrency[currOpp][positions[currOpp]]
-			if tradeReg.inverted {
-				alpha.holdings[currOpp[len(currencyPairs[tradeReg.currenciesKey])-3:]] -= tradeReg.volume
-				alpha.holdings[currOpp[3:]] += tradeReg.volume * thisInstant.ask
-			} else {
-				alpha.holdings[currOpp[len(currOpp)-3:]] += tradeReg.volume / thisInstant.bid // todo check if bid is the correct term to use
-				alpha.holdings[currOpp[3:]] -= tradeReg.volume
+			for _, tradeReg := range alpha.tradeQueue {
+				currOpp := currencyPairs[tradeReg.currenciesKey]
+				thisInstant :=
+					mapCurrency[currOpp][newpos["eurusd"]]
+				if tradeReg.inverted {
+					alpha.holdings[currOpp[len(currencyPairs[tradeReg.currenciesKey])-3:]] -= tradeReg.volume
+					alpha.holdings[currOpp[3:]] += tradeReg.volume * thisInstant.ask
+				} else {
+					alpha.holdings[currOpp[len(currOpp)-3:]] += tradeReg.volume / mapCurrency[currOpp][ba[1]].bid // todo check if bid is the correct term to use
+					alpha.holdings[currOpp[3:]] -= tradeReg.volume
+				}
 			}
-		}
 
-		alpha.tradeQueue = make([]trade, 0)
+			alpha.tradeQueue = make([]trade, 0)
+		}
 		graphInit(resolution, count, alpha)
 	}
 	fmt.Printf("%.10f", evalWorth(alpha))
@@ -147,4 +151,24 @@ func createGraph() {
 	line.AddSeries("Percent Growth", history).SetXAxis(len(history))
 	f, _ := os.Create("line" + time.Now().String() + ".html")
 	line.Render(f)
+}
+
+func findMaxAskIndexWithin1000ms(pos int) []int {
+	instants := mapCurrency["eurusd"]
+	maxAsk := -1.0
+	maxAskIndex := -1
+	maxBid := -1.0
+	maxBidIndex := -1
+	endTime := instants[pos].date.Add(100 * time.Millisecond)
+	for i := pos; i < len(instants) && instants[i].date.Before(endTime); i++ {
+		if instants[i].ask > maxAsk {
+			maxAsk = instants[i].ask
+			maxAskIndex = i
+		}
+		if 1/instants[i].bid > maxBid {
+			maxBid = instants[i].bid
+			maxBidIndex = i
+		}
+	}
+	return []int{maxAskIndex, maxBidIndex}
 }
