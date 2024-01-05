@@ -1,4 +1,6 @@
 # GoBackTester
+Article: https://www.smithinvestmentfund.com/blog/df7xgl5tzw3nj2b7ppvjkc7omy4y9w
+
 This is a backtester written in Golang (and a little python) that uses forex data in order to backtest given trading strategies. Our Data is sourced from truefx.com's historical forex data and supported currencies are listed on their website.
 > Update Jan 8, 2023: I have written an example alpha and added a few features like a mean queue, the graph, and other
 > things. I did not expect a simple strategy to be so profitable. Take a look at returns over just two days-
